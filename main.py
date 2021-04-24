@@ -3,7 +3,6 @@ import Game
 
 def main():
     game = Game.Game()
-    ##game.createGUI(game)
     game.gamePlay()
 
 

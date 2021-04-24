@@ -4,6 +4,11 @@ import Game
 class Node:
     def __init__(self):
         self.array = [[0 for i in range(Game.gameSize)] for j in range(Game.gameSize)]
+        self.children = [None] * Game.gameSize
+
+    # def __init__(self, i):
+    #     self.array = [[0 for i in range(Game.gameSize)] for j in range(Game.gameSize)]
+    #     self.children = [Node() for i in range(Game.gameSize)]
 
     def print(self) -> object:
         for i in range(Game.gameSize):
