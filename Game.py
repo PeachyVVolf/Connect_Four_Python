@@ -11,9 +11,7 @@ difficultyLevel = 'Easy'
 winner = 'None'
 turn = 'max'
 virtual_turn = 'max'
-player_block_i = -1
-player_block_j = -1
-player_block_dir = 'None'
+turn_num = 0
 
 # changes global turn variable
 def changeTurn():
@@ -43,7 +41,7 @@ class Game:
         global virtual_turn
         virtual_turn = turn
         if difficultyLevel == 'Easy':
-            count = 0
+            count = 2
         else:
             count = 4
         self.tree = copy.deepcopy(self.root)
@@ -51,10 +49,14 @@ class Game:
 
     def createTree(self, node, count):
         if difficultyLevel == 'Easy':
-            for i in range(gameSize):
-                node.children[i] = Node.Node()
-                node.children[i].array = copy.deepcopy(node.array)
-                self.gameStatesV(i, node.children[i])
+            if count > 0:
+                for i in range(gameSize):
+                    node.children[i] = Node.Node()
+                    node.children[i].array = copy.deepcopy(node.array)
+                    self.gameStatesV(i, node.children[i])
+                    changeVirtualTurn()
+                    self.createTree(node.children[i], count-1)
+                    changeVirtualTurn()
         elif difficultyLevel == 'Hard':
             if count > 0:
                 for i in range(gameSize):
@@ -72,189 +74,215 @@ class Game:
         node.setValue(row, col, val)
 
 # computer play with value passed
-    def checkVirtualScore(self, node, val, i, j):
-        total_count = 0
-        connect = 1
-        if val == -1:
-            ind = i
-            # vertical add
-            i += 1
-            if i < 6:
-                if i + connect <= 6:
-                    if node.array[i + connect][j] == val:
-                        total_count += 2
-                        connect += 1
-                        if i + connect <= 6:
-                            if node.array[i + connect][j] == val:
-                                total_count += 3
-                                connect += 1
-                                if i + connect <= 6:
-                                    if node.array[i + connect][j] == val:
-                                        total_count += 995
-                                        return total_count
-            i = ind
-            # horizontalR add
-            ind = j
-            j += 1
-            if j < 6:
-                connect = 1
-                if j + connect <= 6:
-                    if node.array[i][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if j + connect <= 6:
-                            if node.array[i][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if j + connect <= 6:
-                                    if node.array[i][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
-            j = ind
-            # horizontalL add
-            ind = j
-            j -= 1
+    def checkVirtualScore(self, node, i, j, val):
+        if node.array[i][j] == val:
+            total_sum = 0
+            connect = 1
+            # check left
             if j > 0:
-                connect = 1
-                if j + connect >= 0:
-                    if node.array[i][j - connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if j + connect >= 0:
-                            if node.array[i][j - connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if j + connect >= 0:
-                                    if node.array[i][j - connect] == val:
-                                        total_count += 995
-                                        return total_count
-            j = ind
-            ind = i
-            indj = j
-            i += 1
-            j += 1
-            # HR add
-            if j < 6 and i < 6:
-                connect = 1
-                if i + connect <= 6 and j + connect <= 6:
-                    if node.array[i + connect][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if i + connect <= 6 and j + connect <= 6:
-                            if node.array[i + connect][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if i + connect <= 6 and j + connect <= 6:
-                                    if node.array[i + connect][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
-            i = ind
-            j = indj
-            # HL add
-            ind = i
-            indj = j
-            i += 1
-            j -= 1
-            if j < 6 and i > 0:
-                connect = 1
-                if i - connect <= 6 and j + connect <= 6:
-                    if node.array[i - connect][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if i - connect <= 6 and j + connect <= 6:
-                            if node.array[i - connect][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if i - connect <= 6 and j + connect <= 6:
-                                    if node.array[i - connect][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
+                if node.array[i][j - connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if j - connect >= 0:
+                        if node.array[i][j - connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if j - connect >= 0:
+                                if node.array[i][j - connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check right
+            if j < 6:
+                if node.array[i][j + connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if j + connect <= 6:
+                        if node.array[i][j + connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if j + connect <= 6:
+                                if node.array[i][j + connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check down
+            if i < 6:
+                if node.array[i + connect][j] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i + connect <= 6:
+                        if node.array[i + connect][j] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i + connect <= 6:
+                                if node.array[i + connect][j] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check up
+            if i > 0:
+                if node.array[i - connect][j] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i - connect >= 0:
+                        if node.array[i - connect][j] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i - connect >= 0:
+                                if node.array[i - connect][j] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check DRD
+            if i < 6 and j < 6:
+                if node.array[i + connect][j + connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i + connect <= 6 and j + connect <= 6:
+                        if node.array[i + connect][j + connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i + connect <= 6 and j + connect <= 6:
+                                if node.array[i + connect][j + connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check DRU
+            if i > 0 and j < 6:
+                if node.array[i - connect][j + connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i - connect >= 0 and j + connect <= 6:
+                        if node.array[i - connect][j + connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i - connect >= 0 and j + connect <= 6:
+                                if node.array[i - connect][j + connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check DLU
+            if i > 0 and j > 0:
+                if node.array[i - connect][j - connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i - connect >= 0 and j - connect >= 0:
+                        if node.array[i - connect][j - connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i - connect >= 0 and j - connect >= 0:
+                                if node.array[i - connect][j - connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
+            # check DLD
+            if i < 6 and j > 0:
+                if node.array[i + connect][j - connect] == val:
+                    total_sum += 2
+                    connect += 1
+                    if i + connect <= 6 and j - connect >= 0:
+                        if node.array[i + connect][j - connect] == val:
+                            total_sum += 3
+                            connect += 1
+                            if i + connect <= 6 and j - connect >= 0:
+                                if node.array[i + connect][j - connect] == val:
+                                    total_sum += 995
+                                    return total_sum
+            connect = 1
 
-            return total_count
+            return total_sum
         else:
+            return 0
 
-            if node.array[i][j] != val:
-                return 0
-            # vertical add
-            if i < 6:
-                if i + connect <= 6:
-                    if node.array[i + connect][j] == val:
-                        total_count += 2
-                        connect += 1
-                        if i + connect <= 6:
-                            if node.array[i + connect][j] == val:
-                                total_count += 3
-                                connect += 1
-                                if i + connect <= 6:
-                                    if node.array[i + connect][j] == val:
-                                        total_count += 995
-                                        return total_count
-
-            # horizontalR add
-            if j < 6:
-                connect = 1
-                if j + connect <= 6:
-                    if node.array[i][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if j + connect <= 6:
-                            if node.array[i][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if j + connect <= 6:
-                                    if node.array[i][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
-
-            # horizontalL add
+    def checkVirtualScoreEnemy(self, node, i, j, val):
+        if node.array[i][j] == val:
+            total_sum = 0
+            connect = 1
+            # check left
             if j > 0:
-                connect = 1
-                if j + connect >= 0:
-                    if node.array[i][j - connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if j + connect >= 0:
-                            if node.array[i][j - connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if j + connect >= 0:
-                                    if node.array[i][j - connect] == val:
-                                        total_count += 995
-                                        return total_count
+                if node.array[i][j - connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if j - connect >= 0:
+                        if node.array[i][j - connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check right
+            if j < 6:
+                if node.array[i][j + connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if j + connect <= 6:
+                        if node.array[i][j + connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check down
+            if i < 6:
+                if node.array[i + connect][j] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i + connect <= 6:
+                        if node.array[i + connect][j] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check up
+            if i > 0:
+                if node.array[i - connect][j] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i - connect >= 0:
+                        if node.array[i - connect][j] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check DRD
+            if i < 6 and j < 6:
+                if node.array[i + connect][j + connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i + connect <= 6 and j + connect <= 6:
+                        if node.array[i + connect][j + connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check DRU
+            if i > 0 and j < 6:
+                if node.array[i - connect][j + connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i - connect >= 0 and j + connect <= 6:
+                        if node.array[i - connect][j + connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check DLU
+            if i > 0 and j > 0:
+                if node.array[i - connect][j - connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i - connect >= 0 and j - connect >= 0:
+                        if node.array[i - connect][j - connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
+            # check DLD
+            if i < 6 and j > 0:
+                if node.array[i + connect][j - connect] == val:
+                    total_sum -= 2
+                    connect += 1
+                    if i + connect <= 6 and j - connect >= 0:
+                        if node.array[i + connect][j - connect] == val:
+                            total_sum -= 995
+                            return total_sum
+            connect = 1
 
-            # HR add
-            if j < 6 and i < 6:
-                connect = 1
-                if i + connect <= 6 and j + connect <= 6:
-                    if node.array[i + connect][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if i + connect <= 6 and j + connect <= 6:
-                            if node.array[i + connect][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if i + connect <= 6 and j + connect <= 6:
-                                    if node.array[i + connect][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
-
-            # HL add
-            if j < 6 and i > 0:
-                connect = 1
-                if i - connect <= 6 and j + connect <= 6:
-                    if node.array[i - connect][j + connect] == val:
-                        total_count += 2
-                        connect += 1
-                        if i - connect <= 6 and j + connect <= 6:
-                            if node.array[i - connect][j + connect] == val:
-                                total_count += 3
-                                connect += 1
-                                if i - connect <= 6 and j + connect <= 6:
-                                    if node.array[i - connect][j + connect] == val:
-                                        total_count += 995
-                                        return total_count
-
-            return total_count
+            return total_sum
+        else:
+            return 0
 
     def gameStatesV(self, col, node):
         row = 0
@@ -271,78 +299,77 @@ class Game:
 
         return
 
-    def calculateStateBestScore(self, node, ind, val):
-        array_of_score = [0] * gameSize
-        blacklist = [0] * gameSize
+    def calculateStateBestScore(self, node):
+        array_of_score = [[0] * gameSize for _ in range(gameSize)]
+        sum_of_score = [0] * gameSize
 
-        if ind == round(gameSize / 2) - 1:
+        if virtual_turn == 'max':
             for i in range(gameSize):
-                if node.array[i][ind] == 1 and array_of_score[ind] == 0:
-                    array_of_score[round(gameSize / 2) - 1] = 4
+                for j in range(gameSize):
+                    array_of_score[i][j] = self.checkVirtualScore(node, i, j, 1)
+
+            print(array_of_score[i])
+        if virtual_turn == 'min':
+            for i in range(gameSize):
+                for j in range(gameSize):
+                    if self.checkVirtualScoreEnemy(node, i, j, -1) < -300:
+                        array_of_score[i][j] = self.checkVirtualScoreEnemy(node, i, j, -1)
+
+            print(array_of_score[i])
 
         for i in range(gameSize):
-            max_value = 0
-            if i not in blacklist:
-                for j in range(gameSize):
-                    if self.checkVirtualScore(node, val, i, j) != 0:
-                        max_value += self.checkVirtualScore(node, val, i, j)
-                        if max_value > array_of_score[j]:
-                            array_of_score[j] += max_value
-                        if array_of_score[j] > max_value and ind == round(gameSize / 2) - 1:
-                            array_of_score[j] += max_value
-                    else:
-                        if node.array[i][j] == -1:
-                            array_of_score[j] -= 10
-                            blacklist.append(i)
-                            continue
+            for j in range(gameSize):
+                sum_of_score[j] += array_of_score[i][j]
 
-        if ind == round(gameSize / 2) - 1:
-            for i in range(gameSize):
-                if node.array[i][ind] == 1 and array_of_score[ind] == 0:
-                    array_of_score[round(gameSize / 2) - 1] = 4
+        return sum_of_score
 
-        return array_of_score[ind]
-
-    def checkStateForCPUDecision(self, node, i, val):
+    def checkStateForCPUDecision(self, node):
+        # changeVirtualTurn()
         array_of_score = [0] * gameSize
-        array_of_enemy = [0] * gameSize
         if node is not None:
             if node.children[0] is None:
-                return self.calculateStateBestScore(node, i, val)
+                someValue = self.calculateStateBestScore(node)
+                print(virtual_turn)
+                if virtual_turn == 'min':
+                    print(min(someValue))
+                    changeVirtualTurn()
+                    return min(someValue)
+                else:
+                    print(max(someValue))
+                    changeVirtualTurn()
+                    return max(someValue)
             else:
                 max_value = 0
                 for i in range(gameSize):
-                    array_of_score[i] += self.checkStateForCPUDecision(node.children[i], i, 1)
-                    array_of_enemy[i] += self.checkStateForCPUDecision(node.children[i], i, -1)
-                for j in range(gameSize):
-                    if array_of_enemy[j] > 300:
-                        array_of_score[j] = -array_of_enemy[j]
-                return array_of_score
-        return array_of_score
+                    array_of_score[i] = self.checkStateForCPUDecision(node.children[i])
+
+                print(array_of_score)
+                print(virtual_turn)
+                if virtual_turn == 'min':
+                    print(min(array_of_score), array_of_score.index(min(array_of_score)))
+                    return min(array_of_score), array_of_score.index(min(array_of_score))
+                else:
+                    print(max(array_of_score), array_of_score.index(max(array_of_score)))
+                    return max(array_of_score), array_of_score.index(max(array_of_score))
 
 # computer decides what position to play
     def CPU_Decide(self):
+        global turn_num
         global winner
-        best_value = self.checkStateForCPUDecision(self.tree, 0, 0)
-        index = 0
-        maxV = 0
-        for i in range(gameSize):
-            if self.root.array[0][i] != 0:
-                best_value[i] = 0
-
-        print(best_value)
-
-        for i in range(gameSize):
-            if best_value[i] < -300:
-                index = i
-                break
-            if maxV < best_value[i]:
-                index = i
-                maxV = best_value[i]
-
+        global virtual_turn
+        index = -1
+        virtual_turn = 'min'
+        best_value = self.checkStateForCPUDecision(self.tree)
+        index = best_value[1]
+        if turn_num == 0:
+            index = 3
+            turn_num += 1
+        print(index, best_value)
         self.gameStatesV(index, self.root)
+        print(self.root.array)
         if self.checkState(self.root) == 4:
             winner = turn
+            self.endgame()
 
 # computer play function
     def gameStates(self):
@@ -373,6 +400,7 @@ class Game:
 
             if self.checkState(self.root) == 4:
                 winner = turn
+                self.endgame()
 
         changeTurn()
         self.createTreeForDif()
