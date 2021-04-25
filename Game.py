@@ -11,15 +11,9 @@ difficultyLevel = 'Easy'
 winner = 'None'
 turn = 'max'
 virtual_turn = 'max'
-CPU_best_count = 0
-CPU_best_index_i = -1
-CPU_best_index_j = -1
-CPU_Direction = 'None'
-Player_best_count = 0
-Player_best_index_i = -1
-Player_best_index_j = -1
-Player_Direction = 'None'
-childIndex = -1
+player_block_i = -1
+player_block_j = -1
+player_block_dir = 'None'
 
 # changes global turn variable
 def changeTurn():
@@ -58,7 +52,8 @@ class Game:
     def createTree(self, node, count):
         if difficultyLevel == 'Easy':
             for i in range(gameSize):
-                node.children[i] = copy.deepcopy(node)
+                node.children[i] = Node.Node()
+                node.children[i].array = copy.deepcopy(node.array)
                 self.gameStatesV(i, node.children[i])
         elif difficultyLevel == 'Hard':
             if count > 0:
@@ -77,129 +72,189 @@ class Game:
         node.setValue(row, col, val)
 
 # computer play with value passed
-    def checkVirtualHorizontal(self, node, val):
-        global CPU_best_count
-        global CPU_best_index_i
-        global CPU_best_index_j
-        global CPU_Direction
-        global Player_best_count
-        global Player_best_index_i
-        global Player_best_index_j
-        global Player_Direction
-        count = 0
-        for i in range(gameSize):
-            for j in range(gameSize):
-                if node.array[i][j] == val:
-                    count += 1
-                    if val == -1:
-                        if count > Player_best_count:
-                            Player_best_count = count
-                            Player_best_index_i = i
-                            Player_best_index_j = j
-                            Player_Direction = 'Hor'
-                    elif val == 1:
-                        if count > CPU_best_count:
-                            CPU_best_count = count
-                            CPU_best_index_i = i
-                            CPU_best_index_j = j
-                            CPU_Direction = 'Hor'
-                else:
-                    count = 0
+    def checkVirtualScore(self, node, val, i, j):
+        total_count = 0
+        connect = 1
+        if val == -1:
+            ind = i
+            # vertical add
+            i += 1
+            if i < 6:
+                if i + connect <= 6:
+                    if node.array[i + connect][j] == val:
+                        total_count += 2
+                        connect += 1
+                        if i + connect <= 6:
+                            if node.array[i + connect][j] == val:
+                                total_count += 3
+                                connect += 1
+                                if i + connect <= 6:
+                                    if node.array[i + connect][j] == val:
+                                        total_count += 995
+                                        return total_count
+            i = ind
+            # horizontalR add
+            ind = j
+            j += 1
+            if j < 6:
+                connect = 1
+                if j + connect <= 6:
+                    if node.array[i][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if j + connect <= 6:
+                            if node.array[i][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if j + connect <= 6:
+                                    if node.array[i][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
+            j = ind
+            # horizontalL add
+            ind = j
+            j -= 1
+            if j > 0:
+                connect = 1
+                if j + connect >= 0:
+                    if node.array[i][j - connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if j + connect >= 0:
+                            if node.array[i][j - connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if j + connect >= 0:
+                                    if node.array[i][j - connect] == val:
+                                        total_count += 995
+                                        return total_count
+            j = ind
+            ind = i
+            indj = j
+            i += 1
+            j += 1
+            # HR add
+            if j < 6 and i < 6:
+                connect = 1
+                if i + connect <= 6 and j + connect <= 6:
+                    if node.array[i + connect][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if i + connect <= 6 and j + connect <= 6:
+                            if node.array[i + connect][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if i + connect <= 6 and j + connect <= 6:
+                                    if node.array[i + connect][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
+            i = ind
+            j = indj
+            # HL add
+            ind = i
+            indj = j
+            i += 1
+            j -= 1
+            if j < 6 and i > 0:
+                connect = 1
+                if i - connect <= 6 and j + connect <= 6:
+                    if node.array[i - connect][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if i - connect <= 6 and j + connect <= 6:
+                            if node.array[i - connect][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if i - connect <= 6 and j + connect <= 6:
+                                    if node.array[i - connect][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
 
-    def checkVirtualVirtical(self, node, val):
-        global CPU_best_count
-        global CPU_best_index_i
-        global CPU_best_index_j
-        global CPU_Direction
-        global Player_best_count
-        global Player_best_index_i
-        global Player_best_index_j
-        global Player_Direction
-        count = 0
-        for i in range(gameSize):
-            for j in range(gameSize):
-                if node.array[j][i] == val:
-                    count += 1
-                    if val == -1:
-                        if count > Player_best_count:
-                            Player_best_count = count
-                            Player_best_index_i = j
-                            Player_best_index_j = i
-                            Player_Direction = 'Ver'
-                    elif val == 1:
-                        if count > CPU_best_count:
-                            CPU_best_count = count
-                            CPU_best_index_i = j
-                            CPU_best_index_j = i
-                            CPU_Direction = 'Ver'
-                else:
-                    count = 0
+            return total_count
+        else:
 
-    def checkVirtualDL(self, node, val):
-        global CPU_best_count
-        global CPU_best_index_i
-        global CPU_best_index_j
-        global CPU_Direction
-        global Player_best_count
-        global Player_best_index_i
-        global Player_best_index_j
-        global Player_Direction
-        count = 0
-        row = 0
-        col = 0
-        for i in range(gameSize):
-            for j in range(gameSize):
-                if node.array[row][col] == val:
-                    count += 1
-                    row += 1
-                    col -= 1
-                    if val == -1:
-                        if count > Player_best_count:
-                            Player_best_count = count
-                            Player_best_index_i = i
-                            Player_best_index_j = j
-                            Player_Direction = 'DL'
-                    elif val == 1:
-                        if count > CPU_best_count:
-                            CPU_best_count = count
-                            CPU_best_index_i = i
-                            CPU_best_index_j = j
-                            CPU_Direction = 'DL'
-                else:
-                    count = 0
+            if node.array[i][j] != val:
+                return 0
+            # vertical add
+            if i < 6:
+                if i + connect <= 6:
+                    if node.array[i + connect][j] == val:
+                        total_count += 2
+                        connect += 1
+                        if i + connect <= 6:
+                            if node.array[i + connect][j] == val:
+                                total_count += 3
+                                connect += 1
+                                if i + connect <= 6:
+                                    if node.array[i + connect][j] == val:
+                                        total_count += 995
+                                        return total_count
 
-    def checkVirtualDR(self, node, val):
-        global CPU_best_count
-        global CPU_best_index_i
-        global CPU_best_index_j
-        global CPU_Direction
-        global Player_best_count
-        global Player_best_index_i
-        global Player_best_index_j
-        global Player_Direction
-        count = 0
-        row = 0
-        col = 0
-        for i in range(gameSize):
-            for j in range(gameSize):
-                if node.array[row][col] == val:
-                    count += 1
-                    row += 1
-                    col += 1
-                    if val == -1:
-                        if count > Player_best_count:
-                            Player_best_count = count
-                            Player_best_index_i = i
-                            Player_best_index_j = j
-                            Player_Direction = 'DR'
-                    elif val == 1:
-                        if count > CPU_best_count:
-                            CPU_best_count = count
-                            CPU_best_index_i = i
-                            CPU_best_index_j = j
-                            CPU_Direction = 'DR'
-                else:
-                    count = 0
+            # horizontalR add
+            if j < 6:
+                connect = 1
+                if j + connect <= 6:
+                    if node.array[i][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if j + connect <= 6:
+                            if node.array[i][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if j + connect <= 6:
+                                    if node.array[i][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
+
+            # horizontalL add
+            if j > 0:
+                connect = 1
+                if j + connect >= 0:
+                    if node.array[i][j - connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if j + connect >= 0:
+                            if node.array[i][j - connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if j + connect >= 0:
+                                    if node.array[i][j - connect] == val:
+                                        total_count += 995
+                                        return total_count
+
+            # HR add
+            if j < 6 and i < 6:
+                connect = 1
+                if i + connect <= 6 and j + connect <= 6:
+                    if node.array[i + connect][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if i + connect <= 6 and j + connect <= 6:
+                            if node.array[i + connect][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if i + connect <= 6 and j + connect <= 6:
+                                    if node.array[i + connect][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
+
+            # HL add
+            if j < 6 and i > 0:
+                connect = 1
+                if i - connect <= 6 and j + connect <= 6:
+                    if node.array[i - connect][j + connect] == val:
+                        total_count += 2
+                        connect += 1
+                        if i - connect <= 6 and j + connect <= 6:
+                            if node.array[i - connect][j + connect] == val:
+                                total_count += 3
+                                connect += 1
+                                if i - connect <= 6 and j + connect <= 6:
+                                    if node.array[i - connect][j + connect] == val:
+                                        total_count += 995
+                                        return total_count
+
+            return total_count
 
     def gameStatesV(self, col, node):
         row = 0
@@ -216,87 +271,84 @@ class Game:
 
         return
 
-    def blockPlayer(self):
-        row = 0
-        col = childIndex
-        while self.root.array[row][col] == 0 and row < gameSize - 1:
-            row += 1
-        if self.root.array[row][col] != 0:
-            row -= 1
-        self.playerTurn(self.root, row, col, 1)
+    def calculateStateBestScore(self, node, ind, val):
+        array_of_score = [0] * gameSize
+        blacklist = [0] * gameSize
 
-    def completeAndWin(self, node):
-        global winner
-        self.findBestPath()
-        winner = 'max'
-        print('YOU LOST!!')
-        self.createGUIWithoutButton()
-        return
-
-    def findBestPath(self):
-        if CPU_Direction == 'Hor':
-            for i in range(CPU_best_count):
-                if self.tree.array[CPU_best_index_i][CPU_best_index_j - i] == 0:
-                    self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_j - i].array)
-                    return
-                elif self.tree.array[CPU_best_index_i][CPU_best_index_j + i] == 0:
-                    self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_j + i].array)
-                    return
-        if CPU_Direction == 'Ver':
-            if self.tree.array[CPU_best_index_i - CPU_best_count][CPU_best_index_j] == 0:
-                self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_j].array)
-            else:
-                self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_j + 1].array)
-        if CPU_Direction == 'DL':
-            if self.tree.array[CPU_best_index_i - CPU_best_count][CPU_best_index_j + CPU_best_count] == 0:
-                self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_i - CPU_best_count].array)
-        if CPU_Direction == 'DR':
-            if self.tree.array[CPU_best_index_i - CPU_best_count][CPU_best_index_j - CPU_best_count] == 0:
-                self.root.array = copy.deepcopy(self.tree.children[CPU_best_index_i - CPU_best_count].array)
-
-    def checkStateForCPUDecision(self):
-        global CPU_best_count
-        global Player_best_count
-        global childIndex
-
-        maxyet = -1
-        if difficultyLevel == 'Easy':
+        if ind == round(gameSize / 2) - 1:
             for i in range(gameSize):
-                self.checkVirtualHorizontal(self.tree.children[i], -1)
-                self.checkVirtualHorizontal(self.tree.children[i], 1)
-                self.checkVirtualVirtical(self.tree.children[i], -1)
-                self.checkVirtualVirtical(self.tree.children[i], 1)
-                self.checkVirtualDL(self.tree.children[i], -1)
-                self.checkVirtualDL(self.tree.children[i], 1)
-                self.checkVirtualDR(self.tree.children[i], -1)
-                self.checkVirtualDR(self.tree.children[i], 1)
+                if node.array[i][ind] == 1 and array_of_score[ind] == 0:
+                    array_of_score[round(gameSize / 2) - 1] = 4
 
-                if maxyet < CPU_best_count:
-                    maxyet = CPU_best_count
-                    childIndex = i
+        for i in range(gameSize):
+            max_value = 0
+            if i not in blacklist:
+                for j in range(gameSize):
+                    if self.checkVirtualScore(node, val, i, j) != 0:
+                        max_value += self.checkVirtualScore(node, val, i, j)
+                        if max_value > array_of_score[j]:
+                            array_of_score[j] += max_value
+                        if array_of_score[j] > max_value and ind == round(gameSize / 2) - 1:
+                            array_of_score[j] += max_value
+                    else:
+                        if node.array[i][j] == -1:
+                            array_of_score[j] -= 10
+                            blacklist.append(i)
+                            continue
 
-                if CPU_best_count == 3:
-                    childIndex = CPU_best_index_j
-                    self.completeAndWin(self.tree.children[childIndex])
-                elif CPU_best_count < 4 and Player_best_count == 3:
+        if ind == round(gameSize / 2) - 1:
+            for i in range(gameSize):
+                if node.array[i][ind] == 1 and array_of_score[ind] == 0:
+                    array_of_score[round(gameSize / 2) - 1] = 4
 
-                    childIndex = Player_best_index_j
-                    self.blockPlayer()
-                    return
-                elif i == gameSize - 1:
+        return array_of_score[ind]
 
-                    self.findBestPath()
-                    return
+    def checkStateForCPUDecision(self, node, i, val):
+        array_of_score = [0] * gameSize
+        array_of_enemy = [0] * gameSize
+        if node is not None:
+            if node.children[0] is None:
+                return self.calculateStateBestScore(node, i, val)
+            else:
+                max_value = 0
+                for i in range(gameSize):
+                    array_of_score[i] += self.checkStateForCPUDecision(node.children[i], i, 1)
+                    array_of_enemy[i] += self.checkStateForCPUDecision(node.children[i], i, -1)
+                for j in range(gameSize):
+                    if array_of_enemy[j] > 300:
+                        array_of_score[j] = -array_of_enemy[j]
+                return array_of_score
+        return array_of_score
 
 # computer decides what position to play
     def CPU_Decide(self):
-        self.checkStateForCPUDecision()
+        global winner
+        best_value = self.checkStateForCPUDecision(self.tree, 0, 0)
+        index = 0
+        maxV = 0
+        for i in range(gameSize):
+            if self.root.array[0][i] != 0:
+                best_value[i] = 0
+
+        print(best_value)
+
+        for i in range(gameSize):
+            if best_value[i] < -300:
+                index = i
+                break
+            if maxV < best_value[i]:
+                index = i
+                maxV = best_value[i]
+
+        self.gameStatesV(index, self.root)
+        if self.checkState(self.root) == 4:
+            winner = turn
 
 # computer play function
     def gameStates(self):
         global winner
         row = 0
-        col = random.randrange(gameSize)
+        col = 3
         while self.root.array[row][col] == 0 and row < gameSize - 1:
             row += 1
         if self.root.array[row][col] != 0:
@@ -331,8 +383,9 @@ class Game:
         return
 
     def gamePlay(self):
-        global winner
-        self.gameStates()
+        self.createTreeForDif()
+        self.CPU_Decide()
+        changeTurn()
         self.createGUI()
 
 # functions to check whether a win state has been reached
@@ -371,30 +424,50 @@ class Game:
         return count
 
     def checkHorizontal(self, node, val):
+        global player_block_j
+        global player_block_i
+        global player_block_dir
+        maxV = 0
         for i in range(gameSize):
             count = 0
             for j in range(gameSize):
                 if node.array[i][j] == val:
                     count += 1
+                    if count > maxV:
+                        maxV = count
+                        if maxV == 3:
+                            player_block_j = j
+                            player_block_i = i
+                            player_block_dir = 'Hor'
                     if count == 4:
                         return count
                 else:
                     count = 0
 
-        return count
+        return maxV
 
     def checkVertical(self, node, val):
+        global player_block_j
+        global player_block_i
+        global player_block_dir
+        maxV = 0
         for i in range(gameSize):
             count = 0
             for j in range(gameSize):
                 if node.array[j][i] == val:
                     count += 1
+                    if count > maxV:
+                        maxV = count
+                        if maxV == 3:
+                            player_block_j = j
+                            player_block_i = i
+                            player_block_dir = 'Ver'
                     if count == 4:
                         return count
                 else:
                     count = 0
 
-        return count
+        return maxV
 
     def checkState(self, node):
         count = 0
